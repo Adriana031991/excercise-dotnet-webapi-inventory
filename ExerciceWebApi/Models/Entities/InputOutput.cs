@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace ExerciceWebApi.Models.Entities
@@ -6,6 +7,8 @@ namespace ExerciceWebApi.Models.Entities
 	{
 		[Key]
 		[StringLength(50)]
+		[JsonProperty("InOutId")]
+
 		public string InOutId { get; set; }
 
 

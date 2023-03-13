@@ -1,6 +1,7 @@
 
 
 using System.Text.Json.Serialization;
+using ExerciceWebApi.Middleware;
 using ExerciceWebApi.Models.Entities;
 using ExerciceWebApi.Services;
 using ExerciceWebApi.Services.Gateway;
@@ -35,17 +36,19 @@ namespace ExerciceWebApi
 
             services.AddAutoMapper(typeof(Startup));
             services.AddDbContext<DbContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("webApiConnection")));
-        }
+
+		}
 
         public void Configure(WebApplication app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<CatchExceptions>();
             // Configure the HTTP request pipeline.
             if (env.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+                        
             app.UseHttpsRedirection();
 
             app.UseAuthorization();

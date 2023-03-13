@@ -8,5 +8,6 @@ public class AutomapperWarehouseProfile : Profile
     {
         CreateMap<CreateWarehouseDto, Warehouse>();
         CreateMap<Warehouse, WarehouseDto>();
+        CreateMap<WarehouseDto, Warehouse>();
     }
 }

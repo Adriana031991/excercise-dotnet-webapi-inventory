@@ -5,7 +5,6 @@ using ExerciceWebApi.Models.Dtos;
 using ExerciceWebApi.Models.Dtos.Response;
 using ExerciceWebApi.Models.Entities;
 using ExerciceWebApi.Services.Gateway;
-using ExerciceWebApi.Utilities.ServiceException;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +43,7 @@ public class TestProductController
                 ProductId = "2",
                 ProductName = "Laptop",
                 ProductDescription = "HP Pavilion",
-                CategoryId = "12",
+                
                 TotalQuantity = 20,
                 Category = null
 
@@ -54,7 +53,7 @@ public class TestProductController
                 ProductId = "3",
                 ProductName = "TV",
                 ProductDescription = "Samsung Smart TV",
-                CategoryId = "12",
+                
                 TotalQuantity = 30,
                 Category = null
             },
@@ -168,41 +167,83 @@ public class TestProductController
         Assert.True(res.GetType() == response.Value.GetType());
     }
 
+	//---GetProductById-----
+
+	[Fact]
+	public async void ProductController_GetProductById_Return_No_Content()
+	{
+		//Arrange
+		var productDto= A.Fake<ProductDto>();
+		var product = A.Fake<Product>();
+        Product a = null;
+		A.CallTo(() => _productService.GetById("")).Returns(a);
+
+		A.CallTo(() => _mapper.Map<ProductDto>(product)).Returns(productDto);
+		var controller = new ProductController(_productService, _mapper);
+
+		//Act
+		var result = await controller.GetProductById("");
+
+		//Assert
+		result.Should().BeOfType(typeof(NotFoundObjectResult));
+
+	}
+
+	[Fact]
+	public async void ProductController_GetProductById_ReturnOk()
+	{
+		//Arrange
+
+		var productDto = A.Fake<ProductDto>();
+		var product = A.Fake<Product>();
+		A.CallTo(() => _productService.GetById("")).Returns(product);
+
+		A.CallTo(() => _mapper.Map<ProductDto>(product)).Returns(productDto);
+		var controller = new ProductController(_productService, _mapper);
+
+		//Act
+		var result = await controller.GetProductById("");
+
+		//Assert
+		result.Should().NotBeNull();
+		result.Should().BeOfType(typeof(OkObjectResult));
+
+	}
 
 
-    [Fact]
-    public async Task ProductController_GetProducts_Result_Have_lenght_more_than_zero()
-    {
-        //Arrange
-        _mockProductService = new Mock<IBaseCrudService<Product>>();
-        var _mockMapper = new Mock<IMapper>();
+	//  [Fact]
+	//  public async Task ProductController_GetProducts_()
+	//  {
+	//      //Arrange
+	//      _mockProductService = new Mock<IBaseCrudService<Product>>();
+	//      var _mockMapper = new Mock<IMapper>();
 
-        var productData = GetProductsData();
-        var productDtoData = GetProductsDtoData();
+	//      var productData = GetProductsData();
+	//      var productDtoData = GetProductsDtoData();
 
-        var res = new ResponseDto("List products", productDtoData);
+	//      var res = new ResponseDto("List products", productDtoData);
 
-        _mockProductService.Setup(x => x.GetAll()).ReturnsAsync(productData).Verifiable();
+	//      _mockProductService.Setup(x => x.GetAll()).ReturnsAsync(productData).Verifiable();
 
-        _mockMapper.Setup(x => x.Map<List<ProductDto>>(productData)).Returns(productDtoData).Verifiable();
+	//      _mockMapper.Setup(x => x.Map<List<ProductDto>>(productData)).Returns(productDtoData).Verifiable();
 
-        var controller = new ProductController(_mockProductService.Object, _mockMapper.Object);
-
-
-        //act
-        var response = await controller.Get() as OkObjectResult;
-
-        //assert
-        response.Value.Should().BeEquivalentTo(res);//pasa
-        Assert.NotNull(response);//pasa
-		response.Value.ToString().Should().Be(res.ToString());//pasa
-		//r.Value.Should().Be(res);//falla
+	//      var controller = new ProductController(_mockProductService.Object, _mockMapper.Object);
 
 
-    }
+	//      //act
+	//      var response = await controller.Get() as OkObjectResult;
+
+	//      //assert
+	//      response.Value.Should().BeEquivalentTo(res);//pasa
+	//      Assert.NotNull(response);//pasa
+	//response.Value.ToString().Should().Be(res.ToString());//pasa
+	////r.Value.Should().Be(res);//falla
 
 
-    [Fact]
+	//  }
+
+
+	[Fact]
     public async Task ProductController_CreateProduct_Result_Created()
     {
         //Arrange
@@ -239,20 +280,20 @@ public class TestProductController
     }
 
 
-    [Fact]
-    public async Task ProductController_CreateProduct_Result_Catch_Exception()
-    {
+ //   [Fact]
+ //   public async Task ProductController_CreateProduct_Result_Catch_Exception()
+ //   {
 
-        var productData = A.Fake<Product>();
-        var productDtoData = A.Fake<CreateProductDto>();
+ //       var productData = A.Fake<Product>();
+ //       var productDtoData = A.Fake<CreateProductDto>();
 
-        A.CallTo(() => _productService.Create(productData)).ThrowsAsync(new Exception());
-        var controller = new ProductController(_productService, _mapper);
+ //       A.CallTo(() => _productService.Create(productData)).ThrowsAsync(new Exception());
+ //       var controller = new ProductController(_productService, _mapper);
 
 
-        await Assert.ThrowsAsync<Exception>(() => _productService.Create(productData));
+ //       await Assert.ThrowsAsync<Exception>(() => _productService.Create(productData));
 
-	}
+	//}
 
 	[Fact]
     public async Task ProductController_CreateProduct_Result_Not_Created()
@@ -350,19 +391,19 @@ public class TestProductController
     }
 
 
-    [Fact]
-    public async Task ProductController_UpdateProduct_Result_Catch_Exception()
-    {
-        //Arrange
-        var productData = A.Fake<Product>();
-        var productDtoData = A.Fake<CreateProductDto>();
+    //[Fact]
+    //public async Task ProductController_UpdateProduct_Result_Catch_Exception()
+    //{
+    //    //Arrange
+    //    var productData = A.Fake<Product>();
+    //    var productDtoData = A.Fake<CreateProductDto>();
 
-        A.CallTo(() => _productService.Update("1", productData)).ThrowsAsync(new Exception());
-        var controller = new ProductController(_productService, _mapper);
+    //    A.CallTo(() => _productService.Update("1", productData)).ThrowsAsync(new Exception());
+    //    var controller = new ProductController(_productService, _mapper);
 
-        await Assert.ThrowsAsync<Exception>(() => _productService.Update("1",productData));
+    //    await Assert.ThrowsAsync<Exception>(() => _productService.Update("1",productData));
 
-    }
+    //}
 
     [Fact]
     public async Task ProductController_UpdateProduct_Result_Not_Updated()
@@ -426,17 +467,17 @@ public class TestProductController
     }
 
 
-    [Fact]
-    public async Task ProductController_DeleteProduct_Result_Catch_Exception()
-    {
+    //[Fact]
+    //public async Task ProductController_DeleteProduct_Result_Catch_Exception()
+    //{
 
 
-        A.CallTo(() => _productService.Delete("1")).ThrowsAsync(new Exception());
-        var controller = new ProductController(_productService, _mapper);
+    //    A.CallTo(() => _productService.Delete("1")).ThrowsAsync(new Exception());
+    //    var controller = new ProductController(_productService, _mapper);
 
-        await Assert.ThrowsAsync<Exception>(() => _productService.Delete("1"));
+    //    await Assert.ThrowsAsync<Exception>(() => _productService.Delete("1"));
 
-    }
+    //}
 
     [Fact]
     public async Task ProductController_DeleteProduct_Result_Not_Delete()

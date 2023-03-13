@@ -8,9 +8,9 @@ namespace ExerciceWebApi.Models.Dtos
 
         public int PartialQuantity { get; set; }
 
-        public ProductDto? Product { get; set; }
+		public ProductDto Product { get; set; }
 
-        public WarehouseDto? Warehouse { get; set; }
+		public WarehouseDto Warehouse { get; set; }
 
 
         public IEnumerable<InputOutputDto>? InputOutputs { get; set; }

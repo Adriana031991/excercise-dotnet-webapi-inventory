@@ -9,8 +9,6 @@ public class ProductDto
 
     public int TotalQuantity { get; set; }
 
-    public string CategoryId { get; set; }
-
 	public CategoryDto? Category { get; set; } 
 
 }

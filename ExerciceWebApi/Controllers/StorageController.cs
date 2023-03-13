@@ -3,197 +3,147 @@ using ExerciceWebApi.Models.Dtos;
 using ExerciceWebApi.Models.Dtos.Response;
 using ExerciceWebApi.Models.Entities;
 using ExerciceWebApi.Services.Gateway;
-using ExerciceWebApi.Utilities.ServiceException;
 using Microsoft.AspNetCore.Mvc;
 
 
 namespace ExerciceWebApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class StorageController : ControllerBase
-    {
+	[Route("api/[controller]")]
+	[ApiController]
+	public class StorageController : ControllerBase
+	{
 
-        private readonly IBaseCrudService<Storage> baseService;
-        private readonly IStorageService storageService;
-        private readonly IMapper mapper;
+		private readonly IBaseCrudService<Storage> baseService;
+		private readonly IStorageService storageService;
+		private readonly IMapper mapper;
 
-        public StorageController(IBaseCrudService<Storage> _baseRepository, IMapper _mapper, IStorageService _storageRepository)
-        {
-            baseService = _baseRepository;
-            mapper = _mapper;
-            storageService = _storageRepository;
+		public StorageController(IBaseCrudService<Storage> _baseRepository, IMapper _mapper, IStorageService _storageRepository)
+		{
+			baseService = _baseRepository;
+			mapper = _mapper;
+			storageService = _storageRepository;
 
-        }
+		}
 
 
-        [HttpGet]
-        public async Task<IActionResult> GetStorages()
-        {
-			try
-			{
+		[HttpGet]
+		public async Task<IActionResult> GetStorages()
+		{
 				var result = await baseService.GetAll();
 
 				var storages = mapper.Map<List<StorageDto>>(result);
-
-				return Ok(new ResponseDto( "List storages", storages ));
-
-			}
-			catch (Exception e)
-			{
-				throw new ServiceException("Problems with your process", e.Message);
-
-			}
-
-
-        }
-
-
-        [HttpPost]
-        public async Task<IActionResult> CreateStorage(CreateStorageDto storageDto)
-        {
-			try
-			{
-				var storage = mapper.Map<Storage>(storageDto);
-				var newStorage = await baseService.Create(storage);
-				if (newStorage == null)
+				if (storages.Count == 0)
 				{
-					return BadRequest(new ResponseDto( "Storage not created" ));
+					return NoContent();
 				}
+				return Ok(new ResponseDto("List storages", storages));
 
-				return Created("", new ResponseDto( "Storage created" ));
 
-			}
-			catch (Exception e)
+		}
+
+
+		[HttpPost]
+		public async Task<IActionResult> CreateStorage(CreateStorageDto storageDto)
+		{
+
+			var storage = mapper.Map<Storage>(storageDto);
+			var newStorage = await baseService.Create(storage);
+			if (newStorage == null)
 			{
-				throw new ServiceException("Problems with your process", e.Message);
-
+				return BadRequest(new ResponseDto("Storage not created"));
 			}
-			
 
-        }
+			return Created("", new ResponseDto("Storage created"));
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateStorage([FromRoute] string id, [FromBody] CreateStorageDto storageDto)
-        {
-			try
+
+		}
+
+		[HttpPut("{id}")]
+		public async Task<IActionResult> UpdateStorage([FromRoute] string id, [FromBody] CreateStorageDto storageDto)
+		{
+
+			var storage = mapper.Map<Storage>(storageDto);
+			var result = await baseService.Update(id, storage);
+			if (result == null)
 			{
-				var storage = mapper.Map<Storage>(storageDto);
-				var result = await baseService.Update(id, storage);
-				if (result == null)
-				{
-					return BadRequest(new ResponseDto( "Storage not updated" ));
-				}
-
-				var storageUpdated = mapper.Map<ProductDto>(result);
-
-				return Ok(new ResponseDto( "Storage  was updated", storageUpdated ));
-
+				return BadRequest(new ResponseDto("Storage not updated"));
 			}
-			catch (Exception e)
+
+			var storageUpdated = mapper.Map<StorageDto>(result);
+
+			return Ok(new ResponseDto("Storage  was updated", storageUpdated));
+
+
+
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteStorage([FromRoute] string id)
+		{
+
+			var result = await baseService.Delete(id);
+			if (!result)
 			{
-				throw new ServiceException("Problems with your process", e.Message);
-
+				return NotFound(new ResponseDto("Storage not found"));
 			}
-			
-        }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStorage([FromRoute] string id)
-        {
-			try
+			return Ok(new ResponseDto("Storage  was deleted"));
+
+
+
+		}
+
+		[HttpGet("{id}")]
+		public async Task<IActionResult> GetStorageById([FromRoute] string id)
+		{
+
+			var result = await baseService.GetById(id);
+			if (result == null)
 			{
-				var result = await baseService.Delete(id);
-				if (!result)
-				{
-					return NotFound(new ResponseDto( "Storage not found" ));
-				}
-
-				return Ok(new ResponseDto( "Storage  was deleted" ));
-
+				return NotFound(new ResponseDto("Storage not found"));
 			}
-			catch (Exception e)
+
+			var storage = mapper.Map<StorageDto>(result);
+
+			return Ok(new ResponseDto("Storage ", storage));
+
+
+
+
+		}
+
+		[HttpGet("isproductinwarehouse/{id}")]
+		public async Task<IActionResult> IsProductInWarehouse([FromRoute] string id)
+		{
+
+			var result = await storageService.IsProductInWarehouse(id);
+			if (!result)
 			{
-				throw new ServiceException("Problems with your process", e.Message);
-
+				return BadRequest(new ResponseDto("Product not in warehouse "));
 			}
-			
 
-        }
+			return Ok(new ResponseDto("Product in warehouse ", result));
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetStorageById([FromRoute] string id)
-        {
-			try
+
+		}
+
+
+		[HttpGet("storagelistbywarehouse/{id}")]
+		public async Task<IActionResult> StorageListByWarehouse([FromRoute] string id)
+		{
+
+			var result = await storageService.StorageListByWarehouse(id);
+			if (result == null)
 			{
-				var result = await baseService.GetById(id);
-				if (result == null)
-				{
-					return NotFound(new ResponseDto( "Storage not found" ));
-				}
-
-				var storage = mapper.Map<StorageDto>(result);
-
-				return Ok(new ResponseDto( "Storage ", storage ));
-
+				return BadRequest(new ResponseDto("Storage not in warehouse "));
 			}
-			catch (Exception e)
-			{
-				throw new ServiceException("Problems with your process", e.Message);
 
-			}
-			
+			var response = mapper.Map<List<StorageDto>>(result);
 
-        }
-
-        [HttpGet("isproductinwarehouse/{id}")]
-        public async Task<IActionResult> IsProductInWarehouse([FromRoute] string id)
-        {
-			try
-			{
-				var result = await storageService.IsProductInWarehouse(id);
-				if (!result)
-				{
-					return BadRequest(new ResponseDto( "Product not in warehouse " ));
-				}
-
-				return Ok(new ResponseDto( "Product in warehouse ", result ));
-
-			}
-			catch (Exception e)
-			{
-				throw new ServiceException("Problems with your process", e.Message);
-
-			}
-			
+			return Ok(new ResponseDto("Storage in warehouse ", response));
 
 
-        }
+		}
 
-
-        [HttpGet("storagelistbywarehouse/{id}")]
-        public async Task<IActionResult> StorageListByWarehouse([FromRoute] string id)
-        {
-			try
-			{
-				var result = await storageService.StorageListByWarehouse(id);
-				if (result == null)
-				{
-					return BadRequest(new ResponseDto( "Product not in warehouse " ));
-				}
-
-				var response = mapper.Map<List<StorageDto>>(result);
-
-				return Ok(new ResponseDto( "Product in warehouse ", response ));
-
-			}
-			catch (Exception e)
-			{
-				throw new ServiceException("Problems with your process", e.Message);
-
-			}
-			
-        }
-
-    }
+	}
 }

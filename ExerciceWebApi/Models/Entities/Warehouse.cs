@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace ExerciceWebApi.Models.Entities
@@ -6,6 +7,7 @@ namespace ExerciceWebApi.Models.Entities
 	{
 		[Key]
 		[StringLength(50)]
+		[JsonProperty("WarehouseId")]
 		public string WarehouseId { get; set; }
 
 		[Required(ErrorMessage = "* El campo Nombre es obligatorio")]

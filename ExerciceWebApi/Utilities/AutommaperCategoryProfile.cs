@@ -7,5 +7,6 @@ public class AutomapperCategoryProfile : Profile
         public AutomapperCategoryProfile(){
             CreateMap<CreateCategoryDto, Category>();
             CreateMap<Category , CategoryDto>();
+            CreateMap<CategoryDto , Category>();
         }
     }

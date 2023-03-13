@@ -1,7 +1,11 @@
+using Newtonsoft.Json;
+
 namespace ExerciceWebApi.Models.Entities
 {
     public class Category
 	{
+		[JsonProperty("CategoryId")]
+
 		public string CategoryId { get; set; }
 		public string? CategoryName { get; set; }
 

@@ -51,11 +51,12 @@ namespace ExerciceWebApi.Services
         public async Task<Category> Update(string id, Category entity)
         {
 			var dbCategory = await Context.Categories.Include(c => c.Products).FirstOrDefaultAsync(x => x.CategoryId == id);
-
-			if (dbCategory != null)
+            var products = await Context.Products.Where(x => x.CategoryId == id).ToListAsync();
+			
+            if (dbCategory != null)
             {
                 dbCategory.CategoryName = entity.CategoryName;
-                dbCategory.Products = entity.Products;
+                dbCategory.Products = products;
 
 
                 await Context.SaveChangesAsync();

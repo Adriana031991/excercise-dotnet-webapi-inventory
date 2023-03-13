@@ -17,7 +17,7 @@ namespace ExerciceWebApi.Services
 
 		public async Task<InputOutput> Create(InputOutput entity)
 		{
-			var storage = await Context.Storages.FirstOrDefaultAsync(x => x.StorageId == entity.StorageId);
+			var storage = await Context.Storages.Include(x => x.Product).Include(x => x.Warehouse).Include(x => x.InputOutputs).FirstOrDefaultAsync(x => x.StorageId == entity.StorageId);
 			entity.InOutId = Guid.NewGuid().ToString();
 			entity.InOutDate = DateTime.Now;
 			entity.Storage = storage;
@@ -44,7 +44,14 @@ namespace ExerciceWebApi.Services
 
 		public async Task<List<InputOutput>> GetAll()
 		{
-			return await Context.InputOutputs.Include(c => c.Storage).ToListAsync();
+			return await Context.InputOutputs
+				.Include(c => c.Storage)
+				.ThenInclude(x =>x.Product)
+				.Include(c => c.Storage)
+				.ThenInclude(x => x.Warehouse)
+				.Include(c => c.Storage).
+				ThenInclude(x => x.InputOutputs)
+				.ToListAsync();
 		}
 
 		public Task<InputOutput> GetById(string id)
@@ -57,7 +64,7 @@ namespace ExerciceWebApi.Services
 			var dbInputOutput = await Context.InputOutputs.FindAsync(id);
 			if (dbInputOutput != null)
 			{
-				dbInputOutput.InOutDate = entity.InOutDate;
+				dbInputOutput.InOutDate = DateTime.Now;
 				dbInputOutput.Quantity = entity.Quantity;
 				dbInputOutput.IsInput = entity.IsInput;
 				dbInputOutput.StorageId = entity.StorageId;

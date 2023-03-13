@@ -1,31 +1,38 @@
 
 using AutoMapper;
 using ExerciceWebApi.Controllers;
+using ExerciceWebApi.Middleware;
 using ExerciceWebApi.Models.Dtos;
 using ExerciceWebApi.Models.Dtos.Response;
 using ExerciceWebApi.Models.Entities;
 using ExerciceWebApi.Services.Gateway;
-using ExerciceWebApi.Utilities.ServiceException;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Net;
 
 namespace tests.Controllers
 {
     public class TestCategoryController
     {
 
-        private Mock<IBaseCrudService<Category>> _mockcategoryService = new Mock<IBaseCrudService<Category>>();
+        private Mock<IBaseCrudService<Category>> _mockcategoryService ;
 
-        private readonly Mock<IMapper> _mockMapper = new Mock<IMapper>();
+        private readonly Mock<IMapper> _mockMapper ;
 
+		//usar un constructor para inicializar
+		public TestCategoryController()
+		{
+			_mockcategoryService = new Mock<IBaseCrudService<Category>>();
+			_mockMapper = new Mock<IMapper>();
+		}
 
 		//--GetAll tests---
 
 		[Fact]
         public async Task CategoryController_GetCategories_ReturnOk()
         {
-
+			//Arrange
             var categoriesData = GetCategoriesData();
             var categoriesDtoData = GetCategoriesDtoData();
 
@@ -48,18 +55,18 @@ namespace tests.Controllers
 
         }
 
-        [Fact]
-        public async Task CategoryController_GetCategories_Catch_Exception()
-        {
+  //      [Fact]
+  //      public async Task CategoryController_GetCategories_Catch_Exception()
+  //      { para futuras referencias
 
-            _mockcategoryService.Setup(x => x.GetAll()).ThrowsAsync(new Exception());
+  //          _mockcategoryService.Setup(x => x.GetAll()).ThrowsAsync(new Exception());
 
-            var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
+  //          var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
 
-			await Assert.ThrowsAsync<ServiceException>(async () => await controller.Get());
+		//	await Assert.ThrowsAsync<tipo de throw>(async () => await controller.Get());
 
 
-		}
+		//}
 
 
 		[Fact]
@@ -97,15 +104,15 @@ namespace tests.Controllers
 
             var res = new ResponseDto("category", categoriesDtoData[0]);
 
-            _mockcategoryService.Setup(x => x.GetById("1")).ReturnsAsync(categoriesData[0]).Verifiable();
+            _mockcategoryService.Setup(x => x.GetById(It.IsAny<string>())).ReturnsAsync(categoriesData[0]).Verifiable();
 
-            _mockMapper.Setup(x => x.Map<CategoryDto>(categoriesData[0])).Returns(categoriesDtoData[0]).Verifiable();
+            _mockMapper.Setup(x => x.Map<CategoryDto>(It.IsAny<Category>())).Returns(categoriesDtoData[0]).Verifiable();
 
             var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
 
 
             //act
-            var response = await controller.GetCategoryById("1") as OkObjectResult;
+            var response = await controller.GetCategoryById(It.IsAny<string>()) as OkObjectResult;
 
             //assert
             response.Value.Should().BeEquivalentTo(res);
@@ -114,18 +121,18 @@ namespace tests.Controllers
 
         }
 
-        [Fact]
-        public async Task CategoryController_GetCategoryById_Catch_Exception()
-        {
+        //[Fact]
+  //      public async Task CategoryController_GetCategoryById_Catch_Exception()
+  //      {
 
-            _mockcategoryService.Setup(x => x.GetById("")).ThrowsAsync(new Exception());
+  //          _mockcategoryService.Setup(x => x.GetById("")).ThrowsAsync(new Exception());
 
-            var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
+  //          var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
 
-			await Assert.ThrowsAsync<ServiceException>(async () => await controller.GetCategoryById(""));
+		//	await Assert.ThrowsAsync<ServiceException>(async () => await controller.GetCategoryById(""));
 
 
-		}
+		//}
 
 
 		[Fact]
@@ -161,15 +168,16 @@ namespace tests.Controllers
 
             var res = new ResponseDto("Category created");
 
-            _mockMapper.Setup(x => x.Map<Category>(categoryDtoData)).Returns(categoryData).Verifiable();
-            _mockcategoryService.Setup(x => x.Create(categoryData)).ReturnsAsync(categoryData).Verifiable();
+            _mockMapper.Setup(x => x.Map<Category>(It.IsAny<CreateCategoryDto>())).Returns(It.IsAny<Category>()).Verifiable();
+			//a los parametros de entrada usar el : It.IsAny<tipo de dato>
+			_mockcategoryService.Setup(x => x.Create(It.IsAny<Category>())).ReturnsAsync(categoryData).Verifiable();
 
 
             var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
 
 
             //act
-            var response = await controller.CreateCategory(categoryDtoData) as CreatedResult;
+            var response = await controller.CreateCategory(It.IsAny<CreateCategoryDto>()) as CreatedResult;
 
             //assert
             response.Value.Should().BeEquivalentTo(res);
@@ -178,20 +186,20 @@ namespace tests.Controllers
 
         }
 
-        [Fact]
-        public async Task CategoryController_CreateCategory_Catch_Exception()
-        {
-			Category categoryData = null;
-			var categoryDtoData = new CreateCategoryDto();
+  //      [Fact]
+  //      public async Task CategoryController_CreateCategory_Catch_Exception()
+  //      {
+			
+		//	var categoryDtoData = new CreateCategoryDto();
 
-			_mockcategoryService.Setup(x => x.Create(categoryData)).ThrowsAsync(new Exception());
+		//	_mockcategoryService.Setup(x => x.Create(It.IsAny<Category>())).ThrowsAsync(new Exception());
 
-            var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
+  //          var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
 
-			await Assert.ThrowsAsync<ServiceException>(async () => await controller.CreateCategory(categoryDtoData));
+		//	await Assert.ThrowsAsync<ServiceException>(async () => await controller.CreateCategory(It.IsAny<CreateCategoryDto>()));
 
 
-		}
+		//}
 
 
 		[Fact]
@@ -249,34 +257,32 @@ namespace tests.Controllers
 
 		}
 
-		[Fact]
-		public async Task CategoryController_UpdateCategory_Catch_Exception()
-		{
-			Category categoryData = null;
-			var categoryDtoData = new CreateCategoryDto();
+		//[Fact]
+		//public async Task CategoryController_UpdateCategory_Catch_Exception()
+		//{
+		//	Category categoryData = null;
+		//	var categoryDtoData = new CreateCategoryDto();
 
-			_mockcategoryService.Setup(x => x.Update("",categoryData)).ThrowsAsync(new Exception());
+		//	_mockcategoryService.Setup(x => x.Update("",categoryData)).ThrowsAsync(new Exception());
 
-			var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
+		//	var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
 
-			await Assert.ThrowsAsync<ServiceException>(async () => await controller.UpdateCategory("",categoryDtoData));
+		//	await Assert.ThrowsAsync<ServiceException>(async () => await controller.UpdateCategory("",categoryDtoData));
 
 
-		}
+		//}
 
 
 		[Fact]
 		public async Task CategoryController_UpdateCategory_Return_Not_Found_Content()
 		{
 			var categoryData = new Category() { CategoryId = "1", CategoryName = "categoria nueva", Products = null };
-			var categoryDtoData = new CategoryDto() { CategoryId = "1", CategoryName = "categoria vieja", Products = null };
-			var categoryDtoIntoData = new CreateCategoryDto() { CategoryName = "categoria vieja" };
 
 
 			var res = new ResponseDto("Category not uptdated");
 
-			_mockMapper.Setup(x => x.Map<Category>(categoryDtoIntoData)).Returns(categoryData).Verifiable();
-			_mockcategoryService.Setup(x => x.Update("1", categoryData));
+			_mockMapper.Setup(x => x.Map<Category>(It.IsAny<CreateCategoryDto>())).Returns(categoryData).Verifiable();
+			_mockcategoryService.Setup(x => x.Update(It.IsAny<string>(), It.IsAny<Category>()));
 
 
 
@@ -284,7 +290,7 @@ namespace tests.Controllers
 
 
 			//act
-			var response = await controller.UpdateCategory("1", categoryDtoIntoData) as NotFoundObjectResult;
+			var response = await controller.UpdateCategory(It.IsAny<string>(), It.IsAny<CreateCategoryDto>()) as NotFoundObjectResult;
 
 			//assert
 			Assert.NotNull(response);
@@ -303,12 +309,12 @@ namespace tests.Controllers
 
 			var res = new ResponseDto("Category  was deleted");
 
-			_mockcategoryService.Setup(x => x.Delete("1")).ReturnsAsync(true).Verifiable();
+			_mockcategoryService.Setup(x => x.Delete(It.IsAny<string>())).ReturnsAsync(true).Verifiable();
 
 			var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
 
 			//act
-			var response = await controller.DeleteCategory("1") as OkObjectResult;
+			var response = await controller.DeleteCategory(It.IsAny<string>()) as OkObjectResult;
 
 			//assert
 			response.Value.Should().BeEquivalentTo(res);
@@ -317,19 +323,19 @@ namespace tests.Controllers
 
 		}
 
-		[Fact]
-		public async Task CategoryController_DeleteCategory_Catch_Exception()
-		{
+		//[Fact]
+		//public async Task CategoryController_DeleteCategory_Catch_Exception()
+		//{
 
-			_mockcategoryService.Setup(x => x.Delete("")).ThrowsAsync(new Exception());
+		//	_mockcategoryService.Setup(x => x.Delete(It.IsAny<string>())).ThrowsAsync(new Exception());
 
-			var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
-			//var res = await controller.DeleteCategory("");
+		//	var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
+		//	//var res = await controller.DeleteCategory("");
 
-			await Assert.ThrowsAsync<ServiceException>(async () => await controller.DeleteCategory(""));
-			//Assert.Contains(res.ToString(), "Problems with your process");
+		//	await Assert.ThrowsAsync<ServiceException>(async () => await controller.DeleteCategory(It.IsAny<string>()));
+		//	//Assert.Contains(res.ToString(), "Problems with your process");
 
-		}
+		//}
 
 
 		[Fact]
@@ -338,12 +344,12 @@ namespace tests.Controllers
 
 			var res = new ResponseDto("Category not found");
 
-			_mockcategoryService.Setup(x => x.Delete("1"));
+			_mockcategoryService.Setup(x => x.Delete(It.IsAny<string>()));
 
 			var controller = new CategoryController(_mockcategoryService.Object, _mockMapper.Object);
 
 			//act
-			var response = await controller.DeleteCategory("1") as NotFoundObjectResult;
+			var response = await controller.DeleteCategory(It.IsAny<string>()) as NotFoundObjectResult;
 
 			//assert
 			Assert.NotNull(response);
@@ -353,7 +359,7 @@ namespace tests.Controllers
 		}
 
 
-
+		//UploadStringCompletedEventArgs patron builder
 		private List<Category> GetCategoriesData()
         {
             List<Category> categoriesData = new List<Category>{

@@ -43,7 +43,7 @@ namespace ExerciceWebApi.Services
         public async Task<List<Product>> GetAll()
         {
             //return await context.Products.ToListAsync();
-            return await context.Products.Include(p => p.Storages).ToListAsync();
+            return await context.Products.Include(p => p.Storages).Include(p => p.Category).ToListAsync();
         }
 
 

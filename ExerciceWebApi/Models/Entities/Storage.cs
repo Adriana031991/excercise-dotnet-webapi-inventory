@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace ExerciceWebApi.Models.Entities
@@ -6,6 +7,8 @@ namespace ExerciceWebApi.Models.Entities
 	{
 		[Key]
 		[StringLength(50)]
+		[JsonProperty("StorageId")]
+
 		public string StorageId { get; set; }
 
 		[Required]
@@ -34,15 +37,16 @@ namespace ExerciceWebApi.Models.Entities
 				" ProductId: " + ProductId + " WarehouseId: " + WarehouseId;
 		}
 
-		//public Storage()
-		//{
-		//}
 
 		public Storage(int partialQuantity, Product? product, Warehouse? warehouse)
 		{
 			PartialQuantity = partialQuantity;
 			Product = product;
 			Warehouse = warehouse;
+		}
+
+		public Storage()
+		{
 		}
 
 		public Storage(string storageId, DateTime lastUpdate, int partialQuantity, string productId, Product? product, string warehouseId, Warehouse? warehouse, IEnumerable<InputOutput>? inputOutputs)

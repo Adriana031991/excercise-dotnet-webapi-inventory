@@ -14,15 +14,17 @@ namespace ExerciceWebApi.Services
 
         public async Task<Storage> Create(Storage entity)
         {
-			//var product = Context.Products.SingleOrDefault(x => x.ProductId == entity.ProductId);
-			//var warehouse = Context.Warehouses.SingleOrDefault(x => x.WarehouseId == entity.WarehouseId);
+			var product = await Context.Products.FirstOrDefaultAsync(x => x.ProductId == entity.Product.ProductId);
+			var warehouse = await Context.Warehouses.FirstOrDefaultAsync(x => x.WarehouseId == entity.Warehouse.WarehouseId);
 
 
 			entity.StorageId = Guid.NewGuid().ToString();
             entity.LastUpdate = DateTime.Now;
-            //entity.Product = product;
-            //entity.Warehouse = warehouse;
-
+            entity.Product = product;
+            entity.Warehouse = warehouse;
+            entity.WarehouseId = warehouse.WarehouseId;
+            entity.ProductId = product.ProductId;
+            
             Context.Add(entity);
             await Context.SaveChangesAsync();
 
@@ -65,14 +67,15 @@ namespace ExerciceWebApi.Services
 
         public async Task<Storage> Update(string id, Storage entity)
         {
+			//var dbStorage = await Context.Storages.FindAsync(id);
 			var dbStorage = await Context.Storages.Include(c => c.Product).Include(c => c.Warehouse).Include(c => c.InputOutputs).FirstOrDefaultAsync(p => p.StorageId == id);
 
 			if (dbStorage != null)
             {
-                dbStorage.LastUpdate = entity.LastUpdate;
+                dbStorage.LastUpdate = DateTime.Now;
                 dbStorage.PartialQuantity = entity.PartialQuantity;
-                dbStorage.ProductId = entity.ProductId;
-                dbStorage.WarehouseId = entity.WarehouseId;
+                dbStorage.ProductId = entity.Product.ProductId;
+                dbStorage.WarehouseId = entity.Warehouse.WarehouseId;
                 dbStorage.InputOutputs = entity.InputOutputs;
 
                 await Context.SaveChangesAsync();
@@ -83,12 +86,12 @@ namespace ExerciceWebApi.Services
 
         }
 
-        public async Task<bool> IsProductInWarehouse(string storageId)
+        public async Task<bool> IsProductInWarehouse(string id)
         {
             var storages = await Context.Storages.Include(c => c.Product).Include(c => c.Warehouse).Include(c => c.InputOutputs).ToListAsync();
 
 			//var storage = (from s in storages where (s.StorageId == storageId) select s);
-			var storage = storages.Where(s => s.StorageId == storageId);
+			var storage = storages.Where(s => s.StorageId == id);
 
             return storage.Any();
         }

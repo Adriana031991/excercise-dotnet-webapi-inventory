@@ -3,118 +3,91 @@ using ExerciceWebApi.Models.Dtos;
 using ExerciceWebApi.Models.Dtos.Response;
 using ExerciceWebApi.Models.Entities;
 using ExerciceWebApi.Services.Gateway;
-using ExerciceWebApi.Utilities.ServiceException;
 using Microsoft.AspNetCore.Mvc;
 
 
 namespace ExerciceWebApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class Warehousecontroller : ControllerBase
-    {
+	[Route("api/[controller]")]
+	[ApiController]
+	public class Warehousecontroller : ControllerBase
+	{
 
-        private readonly IBaseCrudService<Warehouse> warehouseService;
-        private readonly IMapper mapper;
-
-
-        public Warehousecontroller(IBaseCrudService<Warehouse> _warehouseService, IMapper _mapper)
-        {
-            warehouseService = _warehouseService;
-            mapper = _mapper;
-
-        }
+		private readonly IBaseCrudService<Warehouse> warehouseService;
+		private readonly IMapper mapper;
 
 
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-			try
+		public Warehousecontroller(IBaseCrudService<Warehouse> _warehouseService, IMapper _mapper)
+		{
+			warehouseService = _warehouseService;
+			mapper = _mapper;
+
+		}
+
+
+		[HttpGet]
+		public async Task<IActionResult> Get()
+		{
+
+			var result = await warehouseService.GetAll();
+
+			var response = mapper.Map<List<WarehouseDto>>(result);
+
+			if (response.Count == 0)
 			{
-				var result = await warehouseService.GetAll();
-
-				var response = mapper.Map<List<WarehouseDto>>(result);
-
-				return Ok(new ResponseDto("List Warehouses", response ));
-
+				return NoContent();
 			}
-			catch (Exception e)
+			return Ok(new ResponseDto("List Warehouses", response));
+
+
+		}
+
+
+		[HttpPost]
+		public async Task<IActionResult> CreateWarehouse(CreateWarehouseDto warehouseDto)
+		{
+
+			var warehouse = mapper.Map<Warehouse>(warehouseDto);
+			var newWarehouse = await warehouseService.Create(warehouse);
+			if (newWarehouse == null)
 			{
-				throw new ServiceException("Problems with your process", e.Message);
-
+				return BadRequest(new ResponseDto("Warehouse not created"));
 			}
-			
-        }
 
+			return Created("", new ResponseDto("Warehouse created"));
 
-        [HttpPost]
-        public async Task<IActionResult> CreateWarehouse(CreateWarehouseDto warehouseDto)
-        {
-			try
+		}
+
+		[HttpPut("{id}")]
+		public async Task<IActionResult> UpdateWarehouse(string id, CreateWarehouseDto warehouseDto)
+		{
+
+			var warehouse = mapper.Map<Warehouse>(warehouseDto);
+			var result = await warehouseService.Update(id, warehouse);
+			if (result == null)
 			{
-				var warehouse = mapper.Map<Warehouse>(warehouseDto);
-				var newWarehouse = await warehouseService.Create(warehouse);
-				if (newWarehouse == null)
-				{
-					return BadRequest(new ResponseDto("Warehouse not created" ));
-				}
-
-				return Created("", new ResponseDto("Warehouse created" ));
-
+				return BadRequest(new ResponseDto("Warehouse not updated"));
 			}
-			catch (Exception e)
+
+			var response = mapper.Map<WarehouseDto>(result);
+
+			return Ok(new ResponseDto("Warehouse  was updated", response));
+
+
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteWarehouse(string id)
+		{
+
+			var result = await warehouseService.Delete(id);
+			if (!result)
 			{
-				throw new ServiceException("Problems with your process", e.Message);
-
+				return NotFound(new ResponseDto("Warehouse not found"));
 			}
-			
-        }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateWarehouse(string id, CreateWarehouseDto warehouseDto)
-        {
-			try
-			{
-				var warehouse = mapper.Map<Warehouse>(warehouseDto);
-				var result = await warehouseService.Update(id, warehouse);
-				if (result == null)
-				{
-					return BadRequest(new ResponseDto("Warehouse not updated" ));
-				}
+			return Ok(new ResponseDto("Warehouse  was deleted"));
 
-				var response = mapper.Map<WarehouseDto>(result);
-
-				return Ok(new ResponseDto("Warehouse  was updated", response ));
-
-			}
-			catch (Exception e)
-			{
-				throw new ServiceException("Problems with your process", e.Message);
-
-			}
-			
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteWarehouse(string id)
-        {
-			try
-			{
-				var result = await warehouseService.Delete(id);
-				if (!result)
-				{
-					return NotFound(new ResponseDto("Warehouse not found" ));
-				}
-
-				return Ok(new ResponseDto("Warehouse  was deleted" ));
-
-			}
-			catch (Exception e)
-			{
-				throw new ServiceException("Problems with your process", e.Message);
-
-			}
-			
-        }
-    }
+		}
+	}
 }

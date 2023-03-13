@@ -10,6 +10,7 @@ namespace ExerciceWebApi.Utilities
         public AutomapperProductProfile(){
             CreateMap<CreateProductDto, Product>();
             CreateMap<Product , ProductDto>();
+            CreateMap<ProductDto , Product>();
         }
     }
 }
